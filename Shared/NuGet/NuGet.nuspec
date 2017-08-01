@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Zebble.WebApi</id>
+    <version>4.5.263</version>
+    <title>WebApi client for Zebble for Xamarin</title>
+    <description>An easy to use API for consuming Web Api services in Zebble apps.</description>
+    <iconUrl>https://raw.githubusercontent.com/Geeksltd/Zebble.Carousel/master/Shared/Icon.png</iconUrl>
+    <authors>Mobile App Technologies Ltd</authors>
+    <owners>Mobile App Technologies Ltd</owners>
+    <copyright>Copyright ©2017 | Mobile App Technologies Ltd</copyright>
+    <dependencies>
+      <group targetFramework="MonoAndroid">
+        <dependency id="Zebble" version="4.0.257"></dependency>
+      </group>
+      <group targetFramework="Xamarin.iOS10">
+        <dependency id="Zebble" version="4.0.257"></dependency>
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\..\lib\Zebble.WebApi.iOS.*" target="lib\Xamarin.iOS10\" />
+    <file src="..\..\lib\Zebble.WebApi.Android.*" target="lib\MonoAndroid10\" />
+    <file src="..\..\lib\Zebble.WebApi.UWP.*" target="lib\UAP10\" />
+  </files>
+</package>
