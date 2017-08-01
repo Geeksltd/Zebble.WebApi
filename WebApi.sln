@@ -13,7 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "iOS", "iOS\iOS.csproj", "{D
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Shared\Shared.projitems*{aeff27a1-7ff0-4803-8afc-bdee2a526f17}*SharedItemsImports = 4
 		Shared\Shared.projitems*{cc23f9f8-ae12-4ccf-8404-49893b6d565c}*SharedItemsImports = 4
+		Shared\Shared.projitems*{de22bdd6-e154-4b97-b2ed-621f95a5b9ae}*SharedItemsImports = 4
 		Shared\Shared.projitems*{f413d304-3b87-4db8-90d1-84694155eca5}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

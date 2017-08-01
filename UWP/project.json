@@ -2,7 +2,7 @@
   "dependencies": {
     "Newtonsoft.Json": "9.0.1",
     "System.Net.Http": "4.3.2",
-    "Zebble": "4.0.256"
+    "Zebble": "4.0.257"
   },
   "frameworks": {
     "uap10.0": {}
