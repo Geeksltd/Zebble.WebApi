@@ -130,7 +130,11 @@ namespace Zebble
 
                         responseBody = await response.Content.ReadAsStringAsync();
 
-                        if (failed) throw new Exception(errorMessage);
+                        if (failed)
+                        {
+                            Device.Log.Warning("Server Response: " + responseBody);
+                            throw new Exception(errorMessage);
+                        }
                         else return responseBody;
                     }
                     catch (Exception ex)
