@@ -141,6 +141,7 @@ namespace Zebble
             catch { return default(TResponse); }
         }
 
+
         /// <summary>
         /// Deletes all cached Get API results.
         /// </summary>
@@ -153,6 +154,20 @@ namespace Zebble
             }
 
             // Desined as a task in case in the future we need it.
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Deletes the cached Get API result for the specified API url.
+        /// </summary>
+        public static Task DisposeCache(string getApiUrl)
+        {
+            lock (CacheSyncLock)
+            {
+                var file = GetCacheFile(getApiUrl);
+                if (file.Exists()) file.SyncDelete();
+            }
+
             return Task.CompletedTask;
         }
     }
