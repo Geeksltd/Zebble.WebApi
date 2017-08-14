@@ -3,23 +3,23 @@
   <metadata>
     <id>Zebble.WebApi</id>
     <version>4.5.266</version>
-    <title>WebApi client for Zebble for Xamarin</title>
+    <title>WebApi client for Zebble (Xamarin)</title>
     <description>An easy to use API for consuming Web Api services in Zebble apps.</description>
     <iconUrl>https://raw.githubusercontent.com/Geeksltd/Zebble.WebApi/master/Shared/Icon.png</iconUrl>
-	<projectUrl>https://github.com/Geeksltd/Zebble.WebApi</projectUrl>
+    <projectUrl>https://github.com/Geeksltd/Zebble.WebApi</projectUrl>
     <authors>Mobile App Technologies Ltd</authors>
     <owners>Mobile App Technologies Ltd</owners>
     <copyright>Copyright ©2017 | Mobile App Technologies Ltd</copyright>
     <dependencies>
-      <group targetFramework="MonoAndroid"> 
+      <group targetFramework="MonoAndroid">
         <dependency id="Newtonsoft.Json" version="9.0.1"></dependency>
         <dependency id="System.Net.Http" version="4.3.2"></dependency>
       </group>
-      <group targetFramework="Xamarin.iOS10"> 
+      <group targetFramework="Xamarin.iOS10">
         <dependency id="Newtonsoft.Json" version="9.0.1"></dependency>
         <dependency id="System.Net.Http" version="4.3.2"></dependency>
       </group>
-      <group targetFramework="UAP10"> 
+      <group targetFramework="UAP10">
         <dependency id="Newtonsoft.Json" version="9.0.1"></dependency>
         <dependency id="System.Net.Http" version="4.3.2"></dependency>
       </group>
