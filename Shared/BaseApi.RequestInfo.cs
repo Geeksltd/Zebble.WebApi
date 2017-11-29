@@ -69,6 +69,40 @@ namespace Zebble
                 }
             }
 
+            /// <summary>
+            /// Sends this request to the server and processes the response.
+            /// The error action will also apply.
+            /// It will return whether the response was successfully received.
+            /// </summary>
+            public async Task<bool> Send<TEntity, TIdentifier>(TEntity entity) where TEntity : IQueueable<TIdentifier>
+            {
+                try
+                {
+                    ResponseText = (await Device.ThreadPool.Run(DoSend)).OrEmpty();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    if (ex.Message.StartsWith("Internet connection is unavailable."))
+                    {
+                        //Add Queue status and properties
+                        entity.RequestInfo = this;
+                        entity.TimeAdded = DateTime.Now;
+                        entity.Status = QueueStatus.Added;
+
+                        //Add item to the Queue and write it to file
+                        await AddQueueItem<TEntity, TIdentifier>(entity);
+
+                        // Update the response caches
+                        await UpdateCacheUponOfflineModification<TEntity, TIdentifier>(entity, HttpMethod);
+                        return true;
+                    }
+
+                    LogTheError(ex);
+                    return false;
+                }
+            }
+
             public async Task<TResponse> ExtractResponse<TResponse>()
             {
                 // Handle void calls
@@ -144,7 +178,10 @@ namespace Zebble
                         if (System.Diagnostics.Debugger.IsAttached) errorMessage = $"Api call failed: {url}";
 
                         if (!await Device.Network.IsAvailable())
+                        {
                             errorMessage = "Internet connection is unavailable.";
+                            throw new NoNetWorkException(errorMessage, ex);
+                        }
 
                         responseBody = (ex as WebException)?.GetResponseBody() ?? responseBody;
                         if (responseBody.OrEmpty().StartsWith("{\"Message\""))

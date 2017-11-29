@@ -1,6 +1,7 @@
 namespace Zebble
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -13,11 +14,22 @@ namespace Zebble
         const string CacheFolder = "-ApiCache";
         static object CacheSyncLock = new object();
 
-        static FileInfo GetCacheFile(string url)
+        static FileInfo GetCacheFile<TResponse>(string url)
         {
             lock (CacheSyncLock)
-                return Device.IO.Directory(CacheFolder).EnsureExists().GetFile(url.ToIOSafeHash() + ".txt");
+                return Device.IO.Directory(Path.Combine(CacheFolder, GetTypeName<TResponse>())).EnsureExists().GetFile(url.ToIOSafeHash() + ".txt");
         }
+
+        static FileInfo[] GetTypeCacheFiles<TResponse>(TResponse modified)
+        {
+            lock (CacheSyncLock)
+                return Device.IO.Directory(Path.Combine(CacheFolder, GetTypeName(modified))).EnsureExists().GetFiles("*.txt");
+        }
+
+        static string GetTypeName<T>() => typeof(T).GetGenericArguments().SingleOrDefault()?.Name ?? typeof(T).Name.Replace("[]", "");
+
+        static string GetTypeName<T>(T modified) => modified.GetType().Name;
+
 
         static string GetFullUrl(string baseUrl, object queryParams = null)
         {
@@ -72,7 +84,7 @@ namespace Zebble
                 result = await request.ExtractResponse<TResponse>();
 
                 if (request.Error == null)
-                    await GetCacheFile(relativeUrl).WriteAllTextAsync(request.ResponseText);
+                    await GetCacheFile<TResponse>(relativeUrl).WriteAllTextAsync(request.ResponseText);
             }
 
             if (request.Error != null && cacheChoice != ApiResponseCache.Refuse)
@@ -92,7 +104,7 @@ namespace Zebble
             string localCachedVersion;
             try
             {
-                localCachedVersion = (await GetCacheFile(url).ReadAllTextAsync()).CreateSHA1Hash();
+                localCachedVersion = (await GetCacheFile<TResponse>(url).ReadAllTextAsync()).CreateSHA1Hash();
                 if (localCachedVersion.LacksValue()) throw new Exception("Local cached file's hash is empty!");
             }
             catch (Exception ex)
@@ -125,19 +137,75 @@ namespace Zebble
                 var result = await request.ExtractResponse<TResponse>();
                 if (request.Error == null)
                 {
-                    await GetCacheFile(url).WriteAllTextAsync(request.ResponseText);
+                    await GetCacheFile<TResponse>(url).WriteAllTextAsync(request.ResponseText);
                     await refresher(result);
                 }
             }
             catch (Exception ex) { Device.Log.Error(ex); }
         }
 
+        static async Task UpdateCacheUponOfflineModification<TResponse, TIdentifier>(TResponse modified, string httpMethod) where TResponse : IQueueable<TIdentifier>
+        {
+            await Task.Delay(50);
+
+            //Get all cached files for this type
+            var cachedFiles = GetTypeCacheFiles(modified);
+            foreach (var file in cachedFiles)
+            {
+                var records = DeserializeResponse<IEnumerable<TResponse>>(file).ToList();
+                var changed = false;
+                //If it is an add, Add the item to list
+                if (httpMethod == "POST")
+                {
+                    //TODO: test and think
+                    records.Add(modified);
+                    changed = true;
+                }
+                //If the file contains the modified row, update it
+                else if (httpMethod == "DELETE")
+                {
+                    var deletedRecords = records.Where(x => EqualityComparer<TIdentifier>.Default.Equals(x.ID, modified.ID));
+                    if (deletedRecords.Any())
+                    {
+                        records.RemoveAll(x => deletedRecords.Contains(x));
+                        changed = true;
+                    }
+                }
+                else if (httpMethod == "PATCH" || httpMethod == "PUT")
+                    records?.Do(record =>
+                    {
+                        record = modified;
+                        changed = true;
+                    });
+
+                if (!changed) continue;
+                //If cache file is edited, rewrite it
+                var newResponseText = JsonConvert.SerializeObject(records);
+                if (newResponseText.HasValue())
+                    await file.WriteAllTextAsync(newResponseText);
+            }
+        }
+
         static TResponse GetCachedResponse<TResponse>(string url)
         {
-            var file = GetCacheFile(url);
+            var file = GetCacheFile<TResponse>(url);
+            return DeserializeResponse<TResponse>(file);
+        }
+
+        static TResponse DeserializeResponse<TResponse>(FileInfo file)
+        {
             if (!file.Exists()) return default(TResponse);
 
-            try { return JsonConvert.DeserializeObject<TResponse>(file.ReadAllText()); }
+            try
+            {
+                return JsonConvert.DeserializeObject<TResponse>(
+                    file.ReadAllText(),
+                    new JsonSerializerSettings()
+                    {
+                        TypeNameHandling = TypeNameHandling.Auto
+                    }
+                );
+            }
             catch { return default(TResponse); }
         }
 
@@ -160,11 +228,11 @@ namespace Zebble
         /// <summary>
         /// Deletes the cached Get API result for the specified API url.
         /// </summary>
-        public static Task DisposeCache(string getApiUrl)
+        public static Task DisposeCache<TResponse>(string getApiUrl)
         {
             lock (CacheSyncLock)
             {
-                var file = GetCacheFile(getApiUrl);
+                var file = GetCacheFile<TResponse>(getApiUrl);
                 if (file.Exists()) file.SyncDelete();
             }
 

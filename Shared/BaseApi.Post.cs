@@ -10,7 +10,7 @@ namespace Zebble
           OnError errorAction = OnError.Alert,
           bool showWaiting = true)
         {
-            var result = await Post<string>(relativeUrl, null, null, errorAction, showWaiting);
+            var result = await DoPost<string>(relativeUrl, null, null, errorAction, showWaiting);
             return result.Item2.Error == null;
         }
 
@@ -20,7 +20,7 @@ namespace Zebble
             OnError errorAction = OnError.Alert,
             bool showWaiting = true)
         {
-            var result = await Post<string>(relativeUrl, requestData, null, errorAction, showWaiting);
+            var result = await DoPost<string>(relativeUrl, requestData, null, errorAction, showWaiting);
             return result.Item2.Error == null;
         }
 
@@ -30,7 +30,7 @@ namespace Zebble
             OnError errorAction = OnError.Alert,
             bool showWaiting = true)
         {
-            var result = await Post<string>(relativeUrl, null, jsonParams, errorAction, showWaiting);
+            var result = await DoPost<string>(relativeUrl, null, jsonParams, errorAction, showWaiting);
             return result.Item2.Error == null;
         }
 
@@ -40,7 +40,27 @@ namespace Zebble
             OnError errorAction = OnError.Alert,
             bool showWaiting = true)
         {
-            return (await Post<TResponse>(relativeUrl, requestData, null, errorAction, showWaiting)).Item1;
+            return (await DoPost<TResponse>(relativeUrl, requestData, null, errorAction, showWaiting)).Item1;
+        }
+
+        public static async Task<TResponse> Post<TResponse, TEntity>(
+           TEntity entity,
+           string relativeUrl,
+           string requestData,
+           OnError errorAction = OnError.Alert,
+           bool showWaiting = true) where TEntity : IQueueable<Guid>
+        {
+            return await Post<TResponse, TEntity, Guid>(entity, relativeUrl, requestData, errorAction, showWaiting);
+        }
+
+        public static async Task<TResponse> Post<TResponse, TEntity, TIdentifier>(
+           TEntity entity,
+           string relativeUrl,
+           string requestData,
+           OnError errorAction = OnError.Alert,
+           bool showWaiting = true) where TEntity : IQueueable<TIdentifier>
+        {
+            return (await DoPost<TResponse, TEntity, TIdentifier>(entity, relativeUrl, requestData, null, errorAction, showWaiting)).Item1;
         }
 
         public static async Task<TResponse> Post<TResponse>(
@@ -49,10 +69,30 @@ namespace Zebble
             OnError errorAction = OnError.Alert,
             bool showWaiting = true)
         {
-            return (await Post<TResponse>(relativeUrl, null, jsonParams, errorAction, showWaiting)).Item1;
+            return (await DoPost<TResponse>(relativeUrl, null, jsonParams, errorAction, showWaiting)).Item1;
         }
 
-        static async Task<Tuple<TResponse, RequestInfo>> Post<TResponse>(
+        public static async Task<TResponse> Post<TResponse, TEntity>(
+            TEntity entity,
+            string relativeUrl,
+            object jsonParams,
+            OnError errorAction = OnError.Alert,
+            bool showWaiting = true) where TEntity : IQueueable<Guid>
+        {
+            return await Post<TResponse, TEntity, Guid>(entity, relativeUrl, jsonParams, errorAction, showWaiting);
+        }
+
+        public static async Task<TResponse> Post<TResponse, TEntity, TIdentifier>(
+            TEntity entity,
+            string relativeUrl,
+            object jsonParams,
+            OnError errorAction = OnError.Alert,
+            bool showWaiting = true) where TEntity : IQueueable<TIdentifier>
+        {
+            return (await DoPost<TResponse, TEntity, TIdentifier>(entity, relativeUrl, null, jsonParams, errorAction, showWaiting)).Item1;
+        }
+
+        static async Task<Tuple<TResponse, RequestInfo>> DoPost<TResponse>(
          string relativeUrl,
          string requestData,
          object jsonParams,
@@ -72,6 +112,36 @@ namespace Zebble
                 if (showWaiting) await Waiting.Show();
                 var result = default(TResponse);
                 if (await request.Send()) result = await request.ExtractResponse<TResponse>();
+                return Tuple.Create(result, request);
+            }
+            finally
+            {
+                if (showWaiting) await Waiting.Hide();
+            }
+        }
+
+
+        static async Task<Tuple<TResponse, RequestInfo>> DoPost<TResponse, TEntity, TIdentifier>(
+         TEntity entity,
+         string relativeUrl,
+         string requestData,
+         object jsonParams,
+         OnError errorAction,
+         bool showWaiting) where TEntity : IQueueable<TIdentifier>
+        {
+            var request = new RequestInfo(relativeUrl)
+            {
+                ErrorAction = errorAction,
+                HttpMethod = "POST",
+                RequestData = requestData,
+                JsonData = jsonParams
+            };
+
+            try
+            {
+                if (showWaiting) await Waiting.Show();
+                var result = default(TResponse);
+                if (await request.Send<TEntity, TIdentifier>(entity)) result = await request.ExtractResponse<TResponse>();
                 return Tuple.Create(result, request);
             }
             finally

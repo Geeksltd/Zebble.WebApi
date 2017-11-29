@@ -21,6 +21,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)BaseApi.Patch.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseApi.Post.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseApi.Put.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseApi.Queue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseApi.RequestInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IQueueable.cs" />
   </ItemGroup>
 </Project>
