@@ -15,7 +15,12 @@
         static FileInfo GetQueueFile()
         {
             lock (QueueSyncLock)
-                return Device.IO.Directory(QueueFolder).EnsureExists().GetFile("Queue.txt");
+            {
+                var file = Device.IO.Directory(QueueFolder).EnsureExists().GetFile("Queue.txt");
+                //TODO: not sure why needed for the first time. Should be removed in future. 
+                if (!file?.Exists ?? true) file.WriteAllText("");
+                return file;
+            }
         }
 
         static bool UpdateQueueFile<TEntitiy, TIdentifier>(IEnumerable<TEntitiy> items) where TEntitiy : IQueueable<TIdentifier>
