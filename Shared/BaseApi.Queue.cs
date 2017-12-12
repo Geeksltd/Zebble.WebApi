@@ -1,23 +1,23 @@
 ﻿namespace Zebble
 {
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using Newtonsoft.Json;
 
     partial class BaseApi
     {
-        const string QueueFolder = "-ApiQueue";
+        const string QUEUE_FOLDER = "-ApiQueue";
         static object QueueSyncLock = new object();
 
         static FileInfo GetQueueFile()
         {
             lock (QueueSyncLock)
             {
-                var file = Device.IO.Directory(QueueFolder).EnsureExists().GetFile("Queue.txt");
-                //TODO: not sure why needed for the first time. Should be removed in future. 
+                var file = Device.IO.Directory(QUEUE_FOLDER).EnsureExists().GetFile("Queue.txt");
+                // TODO: not sure why needed for the first time. Should be removed in future.
                 if (!file?.Exists ?? true) file.WriteAllText("");
                 return file;
             }
@@ -32,6 +32,7 @@
                     GetQueueFile().WriteAllText(text);
                 return true;
             }
+
             return false;
         }
 

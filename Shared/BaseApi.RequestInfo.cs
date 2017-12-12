@@ -1,11 +1,11 @@
 namespace Zebble
 {
+    using Newtonsoft.Json;
     using System;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
-    using Newtonsoft.Json;
 
     partial class BaseApi
     {
@@ -85,12 +85,12 @@ namespace Zebble
                 {
                     if (ex.Message.StartsWith("Internet connection is unavailable."))
                     {
-                        //Add Queue status and properties
+                        // Add Queue status and properties
                         entity.RequestInfo = this;
                         entity.TimeAdded = DateTime.Now;
                         entity.Status = QueueStatus.Added;
 
-                        //Add item to the Queue and write it to file
+                        // Add item to the Queue and write it to file
                         await AddQueueItem<TEntity, TIdentifier>(entity);
 
                         // Update the response caches

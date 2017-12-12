@@ -1,35 +1,34 @@
 namespace Zebble
 {
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
-    using Newtonsoft.Json;
 
     partial class BaseApi
     {
         public static string StaleDataWarning = "The latest data cannot be received from the server right now.";
-        const string CacheFolder = "-ApiCache";
+        const string CACHE_FOLDER = "-ApiCache";
         static object CacheSyncLock = new object();
 
         static FileInfo GetCacheFile<TResponse>(string url)
         {
             lock (CacheSyncLock)
-                return Device.IO.Directory(Path.Combine(CacheFolder, GetTypeName<TResponse>())).EnsureExists().GetFile(url.ToIOSafeHash() + ".txt");
+                return Device.IO.Directory(Path.Combine(CACHE_FOLDER, GetTypeName<TResponse>())).EnsureExists().GetFile(url.ToIOSafeHash() + ".txt");
         }
 
         static FileInfo[] GetTypeCacheFiles<TResponse>(TResponse modified)
         {
             lock (CacheSyncLock)
-                return Device.IO.Directory(Path.Combine(CacheFolder, GetTypeName(modified))).EnsureExists().GetFiles("*.txt");
+                return Device.IO.Directory(Path.Combine(CACHE_FOLDER, GetTypeName(modified))).EnsureExists().GetFiles("*.txt");
         }
 
         static string GetTypeName<T>() => typeof(T).GetGenericArguments().SingleOrDefault()?.Name ?? typeof(T).Name.Replace("[]", "");
 
         static string GetTypeName<T>(T modified) => modified.GetType().Name;
-
 
         static string GetFullUrl(string baseUrl, object queryParams = null)
         {
@@ -148,20 +147,20 @@ namespace Zebble
         {
             await Task.Delay(50);
 
-            //Get all cached files for this type
+            // Get all cached files for this type
             var cachedFiles = GetTypeCacheFiles(modified);
             foreach (var file in cachedFiles)
             {
                 var records = DeserializeResponse<IEnumerable<TResponse>>(file).ToList();
                 var changed = false;
-                //If it is an add, Add the item to list
+                // If it is an add, Add the item to list
                 if (httpMethod == "POST")
                 {
-                    //TODO: test and think
+                    // TODO: test and think
                     records.Add(modified);
                     changed = true;
                 }
-                //If the file contains the modified row, update it
+                // If the file contains the modified row, update it
                 else if (httpMethod == "DELETE")
                 {
                     var deletedRecords = records.Where(x => EqualityComparer<TIdentifier>.Default.Equals(x.ID, modified.ID));
@@ -179,7 +178,7 @@ namespace Zebble
                     });
 
                 if (!changed) continue;
-                //If cache file is edited, rewrite it
+                // If cache file is edited, rewrite it
                 var newResponseText = JsonConvert.SerializeObject(records);
                 if (newResponseText.HasValue())
                     await file.WriteAllTextAsync(newResponseText);
@@ -209,7 +208,6 @@ namespace Zebble
             catch { return default(TResponse); }
         }
 
-
         /// <summary>
         /// Deletes all cached Get API results.
         /// </summary>
@@ -217,8 +215,8 @@ namespace Zebble
         {
             lock (CacheSyncLock)
             {
-                if (Device.IO.Directory(CacheFolder).Exists())
-                    Device.IO.Directory(CacheFolder).Delete(recursive: true);
+                if (Device.IO.Directory(CACHE_FOLDER).Exists())
+                    Device.IO.Directory(CACHE_FOLDER).Delete(recursive: true);
             }
 
             // Desined as a task in case in the future we need it.

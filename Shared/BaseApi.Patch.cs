@@ -43,14 +43,14 @@ namespace Zebble
             return (await DoPatch<TResponse>(relativeUrl, requestData, null, errorAction, showWaiting)).Item1;
         }
 
-        public static async Task<TResponse> Patch<TResponse, TEntity>(
+        public static Task<TResponse> Patch<TResponse, TEntity>(
             TEntity entity,
             string relativeUrl,
             string requestData,
             OnError errorAction = OnError.Alert,
             bool showWaiting = true) where TEntity : IQueueable<Guid>
         {
-            return await Patch<TResponse, TEntity, Guid>(entity, relativeUrl, requestData, errorAction, showWaiting);
+            return Patch<TResponse, TEntity, Guid>(entity, relativeUrl, requestData, errorAction, showWaiting);
         }
 
         public static async Task<TResponse> Patch<TResponse, TEntity, TIdentifier>(
@@ -72,14 +72,14 @@ namespace Zebble
             return (await DoPatch<TResponse>(relativeUrl, null, jsonParams, errorAction, showWaiting)).Item1;
         }
 
-        public static async Task<TResponse> Patch<TResponse, TEntity>(
+        public static Task<TResponse> Patch<TResponse, TEntity>(
             TEntity entity,
             string relativeUrl,
             object jsonParams,
             OnError errorAction = OnError.Alert,
             bool showWaiting = true) where TEntity : IQueueable<Guid>
         {
-            return await Patch<TResponse, TEntity, Guid>(entity, relativeUrl, jsonParams, errorAction, showWaiting);
+            return Patch<TResponse, TEntity, Guid>(entity, relativeUrl, jsonParams, errorAction, showWaiting);
         }
 
         public static async Task<TResponse> Patch<TResponse, TEntity, TIdentifier>(
