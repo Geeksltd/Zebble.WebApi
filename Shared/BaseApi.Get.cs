@@ -153,15 +153,9 @@ namespace Zebble
             {
                 var records = DeserializeResponse<IEnumerable<TResponse>>(file).ToList();
                 var changed = false;
-                // If it is an add, Add the item to list
-                if (httpMethod == "POST")
-                {
-                    // TODO: test and think
-                    records.Add(modified);
-                    changed = true;
-                }
+
                 // If the file contains the modified row, update it
-                else if (httpMethod == "DELETE")
+                if (httpMethod == "DELETE")
                 {
                     var deletedRecords = records.Where(x => EqualityComparer<TIdentifier>.Default.Equals(x.ID, modified.ID));
                     if (deletedRecords.Any())
