@@ -109,7 +109,13 @@ namespace Zebble
                 if (ResponseText.LacksValue() && typeof(TResponse) == typeof(bool))
                     return default(TResponse);
 
-                try { return JsonConvert.DeserializeObject<TResponse>(ResponseText); }
+                try
+                {
+                    var result = ResponseText;
+                    if (typeof(TResponse) == typeof(string))
+                        result = ResponseText.ToString().EnsureStartsWith("\"").EnsureEndsWith("\"");
+                    return JsonConvert.DeserializeObject<TResponse>(result);
+                }
                 catch (Exception ex)
                 {
                     ex = new Exception("Failed to convert API response to " + typeof(TResponse).GetCSharpName(), ex);
