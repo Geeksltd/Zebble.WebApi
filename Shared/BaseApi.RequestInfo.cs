@@ -59,7 +59,7 @@ namespace Zebble
             {
                 try
                 {
-                    ResponseText = (await Device.ThreadPool.Run(DoSend)).OrEmpty();
+                    ResponseText = (await Thread.Pool.Run(DoSend)).OrEmpty();
                     return true;
                 }
                 catch (Exception ex)
@@ -78,7 +78,7 @@ namespace Zebble
             {
                 try
                 {
-                    ResponseText = (await Device.ThreadPool.Run(DoSend)).OrEmpty();
+                    ResponseText = (await Thread.Pool.Run(DoSend)).OrEmpty();
                     return true;
                 }
                 catch (Exception ex)

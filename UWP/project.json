@@ -1,8 +1,9 @@
 ﻿{
   "dependencies": {
+    "Microsoft.NETCore.UniversalWindowsPlatform": "6.0.6",
     "Newtonsoft.Json": "9.0.1",
     "System.Net.Http": "4.3.3",
-    "Zebble": "4.2.375"
+    "Zebble": "4.3.100"
   },
   "frameworks": {
     "uap10.0.10240": {}

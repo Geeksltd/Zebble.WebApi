@@ -70,7 +70,7 @@ namespace Zebble
                 if (HasValue(result))
                 {
                     if (cacheChoice == ApiResponseCache.PreferThenUpdate)
-                        Device.ThreadPool.RunOnNewThread(() => RefreshUponUpdatedResponse(relativeUrl, refresher));
+                        Thread.Pool.RunOnNewThread(() => RefreshUponUpdatedResponse(relativeUrl, refresher));
 
                     return result;
                 }
