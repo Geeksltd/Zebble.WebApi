@@ -112,9 +112,13 @@ namespace Zebble
                 try
                 {
                     var result = ResponseText;
-                    if (typeof(TResponse) == typeof(string) && result.HasValue())
-                        result = ResponseText.ToString().EnsureStartsWith("\"").EnsureEndsWith("\"");
-                    return JsonConvert.DeserializeObject<TResponse>(result);
+                    if (result.HasValue())
+                    {
+                        if (typeof(TResponse) == typeof(string))
+                            result = ResponseText.EnsureStartsWith("\"").EnsureEndsWith("\"");
+                        return JsonConvert.DeserializeObject<TResponse>(result);
+                    }
+                    else return default(TResponse);
                 }
                 catch (Exception ex)
                 {
