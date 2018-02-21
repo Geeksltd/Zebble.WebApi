@@ -27,6 +27,9 @@ namespace Zebble
 
             public HttpStatusCode ResponseCode { get; private set; }
             public HttpResponseHeaders ResponseHeaders { get; private set; }
+
+            //Fixes the JsonConvert.SerializeObject issue with Exception reference to itself
+            [JsonIgnore]
             public Exception Error { get; internal set; }
 
             public bool EnsureTrailingSlash { get; set; } = true;
