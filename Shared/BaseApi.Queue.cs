@@ -79,7 +79,10 @@
         public static async Task<bool> ApplyQueueItems<TEntitiy, TIdentifier>() where TEntitiy : IQueueable<TIdentifier>
         {
             var queueItems = await GetQueueItems<TEntitiy>();
-            await queueItems?.WhenAll(async queueItem =>
+
+            if (queueItems == null) return false;
+
+            await queueItems.WhenAll(async queueItem =>
             {
                 if (queueItem.Status == QueueStatus.Added)
                 {
