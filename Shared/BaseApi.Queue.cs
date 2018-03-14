@@ -76,7 +76,7 @@
             return UpdateQueueFile<TEntitiy, TIdentifier>(queueItems);
         }
 
-        public static async Task<bool> ApplyQueueItems<TEntitiy, TIdentifier>() where TEntitiy : IQueueable<TIdentifier>
+        public static async Task<bool> ApplyQueueItems<TEntitiy, TIdentifier>(bool applyRejectedItems = false) where TEntitiy : IQueueable<TIdentifier>
         {
             var queueItems = await GetQueueItems<TEntitiy>();
 
@@ -84,7 +84,8 @@
 
             await queueItems.WhenAll(async queueItem =>
             {
-                if (queueItem.Status == QueueStatus.Added)
+                if (queueItem.Status == QueueStatus.Added
+                || (queueItem.Status == QueueStatus.Rejected && applyRejectedItems))
                 {
                     if (await queueItem.RequestInfo.Send()) queueItem.Status = QueueStatus.Applied;
                     else queueItem.Status = QueueStatus.Rejected;
