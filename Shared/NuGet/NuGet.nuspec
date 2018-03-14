@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
     <id>Zebble.WebApi</id>
-    <version>4.5.279</version>
+    <version>4.5.280</version>
     <title>WebApi client for Zebble (Xamarin)</title>
     <description>An easy to use API for consuming Web Api services in Zebble apps.</description>
     <iconUrl>https://raw.githubusercontent.com/Geeksltd/Zebble.WebApi/master/Shared/Icon.png</iconUrl>
