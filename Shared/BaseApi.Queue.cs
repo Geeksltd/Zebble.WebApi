@@ -46,7 +46,7 @@
                     {
                         TypeNameHandling = TypeNameHandling.Auto
                     }
-                ); ;
+                );
         }
 
         static async Task<bool> UpdateQueueItem<TEntitiy, TIdentifier>(TEntitiy item) where TEntitiy : IQueueable<TIdentifier>
@@ -82,7 +82,7 @@
 
             if (queueItems == null) return false;
 
-            await queueItems.WhenAll(async queueItem =>
+            foreach (var queueItem in queueItems.OrderBy(x => x.TimeAdded))
             {
                 if (queueItem.Status == QueueStatus.Added
                 || (queueItem.Status == QueueStatus.Rejected && applyRejectedItems))
@@ -92,7 +92,7 @@
 
                     queueItem.TimeUpdated = DateTime.Now;
                 }
-            });
+            }
 
             return UpdateQueueFile<TEntitiy, TIdentifier>(queueItems);
         }
