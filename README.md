@@ -1,4 +1,4 @@
-[logo]: https://raw.githubusercontent.com/Geeksltd/Zebble.WebApi/master/Shared/NuGet/Icon.png "Zebble.WebApi"
+[logo]: https://raw.githubusercontent.com/Geeksltd/Zebble.WebApi/master/Shared/Icon.png "Zebble.WebApi" "Zebble.WebApi"
 
 
 ## Zebble.WebApi
