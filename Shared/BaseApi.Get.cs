@@ -89,7 +89,7 @@ namespace Zebble
             if (request.Error != null && cacheChoice != ApiResponseCache.Refuse)
             {
                 result = GetCachedResponse<TResponse>(relativeUrl);
-                if (HasValue(result) && cacheChoice == ApiResponseCache.AcceptButWarn)
+                if (cacheChoice == ApiResponseCache.AcceptButWarn)
                     await Alert.Toast(StaleDataWarning);
             }
 
