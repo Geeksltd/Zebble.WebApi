@@ -165,11 +165,16 @@ namespace Zebble
                     }
                 }
                 else if (httpMethod == "PATCH" || httpMethod == "PUT")
-                    records?.Do(record =>
+                {
+                    foreach (var record in records.ToList())
                     {
-                        record = modified;
-                        changed = true;
-                    });
+                        if (EqualityComparer<TIdentifier>.Default.Equals(record.ID, modified.ID))
+                        {
+                            records.Replace(record, modified);
+                            changed = true;
+                        }
+                    }
+                }
 
                 if (!changed) continue;
                 // If cache file is edited, rewrite it

@@ -28,7 +28,7 @@ namespace Zebble
             public HttpStatusCode ResponseCode { get; private set; }
             public HttpResponseHeaders ResponseHeaders { get; private set; }
 
-            //Fixes the JsonConvert.SerializeObject issue with Exception reference to itself
+            // Fixes the JsonConvert.SerializeObject issue with Exception reference to itself
             [JsonIgnore]
             public Exception Error { get; internal set; }
 
@@ -207,7 +207,7 @@ namespace Zebble
                             }
                             catch { /* No logging is needed */; }
                         }
-                        //We are doing this in cases that error is not serialized in the SeverError format
+                        // We are doing this in cases that error is not serialized in the SeverError format
                         else errorMessage = responseBody.Or(errorMessage);
 
                         await ErrorAction.Apply(errorMessage);
