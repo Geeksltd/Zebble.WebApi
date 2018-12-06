@@ -68,6 +68,7 @@ namespace Zebble
                 catch (Exception ex)
                 {
                     LogTheError(ex);
+                    await ErrorAction.Apply(ex);
                     return false;
                 }
             }
@@ -102,6 +103,7 @@ namespace Zebble
                     }
 
                     LogTheError(ex);
+                    await ErrorAction.Apply(ex);
                     return false;
                 }
             }
@@ -210,7 +212,7 @@ namespace Zebble
                         // We are doing this in cases that error is not serialized in the SeverError format
                         else errorMessage = responseBody.Or(errorMessage);
 
-                        await ErrorAction.Apply(errorMessage);
+                        //await ErrorAction.Apply(errorMessage);
 
                         throw new Exception(errorMessage, ex);
                     }
