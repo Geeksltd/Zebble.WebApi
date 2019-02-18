@@ -14,14 +14,22 @@ namespace Zebble
         {
             var binding = new Bindable<TViewModel>.ViewModelMemberBinding<TApiResult>(@this, viewModelProperty);
 
-            Task refresh()
+            var cacheAvailable = false;
+
+            async Task refresh()
             {
-                return BaseApi.Get<TApiResult>(apiUrl, cacheChoice: ApiResponseCache.PreferThenUpdate, refresher: binding.Update);
+                var fresh = await BaseApi.Get<TApiResult>(apiUrl, cacheChoice: ApiResponseCache.PreferThenUpdate, refresher: binding.Update);
+                if (!cacheAvailable && fresh != null)
+                    binding.Update(fresh);
             }
 
             // If there is a cached result already available, set it immediately
             var result = await BaseApi.Get<TApiResult>(apiUrl, cacheChoice: ApiResponseCache.CacheOrNull);
-            if (result != null) await binding.Update(result);
+            if (result != null)
+            {
+                cacheAvailable = true;
+                await binding.Update(result);
+            }
 
             // Otherwise send a fresh request and apply the value.
             refresh().RunInParallel();
