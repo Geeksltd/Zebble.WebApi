@@ -64,7 +64,7 @@ namespace Zebble
             relativeUrl = GetFullUrl(relativeUrl, queryParams);
 
             var result = default(TResponse);
-            if (cacheChoice == ApiResponseCache.Prefer || cacheChoice == ApiResponseCache.PreferThenUpdate)
+            if (cacheChoice == ApiResponseCache.Prefer || cacheChoice == ApiResponseCache.PreferThenUpdate || cacheChoice == ApiResponseCache.CacheOrNull)
             {
                 result = GetCachedResponse<TResponse>(relativeUrl);
                 if (HasValue(result))
@@ -74,6 +74,9 @@ namespace Zebble
 
                     return result;
                 }
+
+                if (cacheChoice == ApiResponseCache.CacheOrNull)
+                    return result;
             }
 
             var request = new RequestInfo(relativeUrl) { ErrorAction = errorAction, HttpMethod = "GET" };
