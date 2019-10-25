@@ -2,6 +2,7 @@ namespace Zebble
 {
     using Newtonsoft.Json;
     using System;
+    using System.Linq;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
@@ -68,7 +69,8 @@ namespace Zebble
                 catch (Exception ex)
                 {
                     LogTheError(ex);
-                    await ErrorAction.Apply(ex);
+                    var friendlyMessage = ex.Message.Split(new[] { '\r', '\n' })?.FirstOrDefault() ?? ex.Message;
+                    await ErrorAction.Apply(ex, friendlyMessage);
                     return false;
                 }
             }
