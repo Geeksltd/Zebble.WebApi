@@ -214,6 +214,9 @@ namespace Zebble
                         // We are doing this in cases that error is not serialized in the SeverError format
                         else errorMessage = responseBody.Or(errorMessage);
 
+                        if (errorMessage.StartsWith("<!DOCTYPE") && errorMessage.Contains("<title>"))
+                            errorMessage = errorMessage.Substring("<title>", "</title>", inclusive: false);
+
                         //await ErrorAction.Apply(errorMessage);
 
                         throw new Exception(errorMessage, ex);
