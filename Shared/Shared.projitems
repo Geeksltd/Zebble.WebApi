@@ -24,6 +24,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)BaseApi.Queue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseApi.RequestInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IQueueable.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)WebApiExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseApi.Waiting.cs" />
   </ItemGroup>
 </Project>

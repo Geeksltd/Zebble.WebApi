@@ -109,14 +109,14 @@ namespace Zebble
 
             try
             {
-                if (showWaiting) await Waiting.Show();
+                if (showWaiting) await ShowWaiting();
                 var result = default(TResponse);
                 if (await request.Send()) result = await request.ExtractResponse<TResponse>();
                 return Tuple.Create(result, request);
             }
             finally
             {
-                if (showWaiting) await Waiting.Hide();
+                if (showWaiting) await HideWaiting();
             }
         }
 
@@ -138,14 +138,14 @@ namespace Zebble
 
             try
             {
-                if (showWaiting) await Waiting.Show();
+                if (showWaiting) await ShowWaiting();
                 var result = default(TResponse);
                 if (await request.Send<TEntity, TIdentifier>(entity)) result = await request.ExtractResponse<TResponse>();
                 return Tuple.Create(result, request);
             }
             finally
             {
-                if (showWaiting) await Waiting.Hide();
+                if (showWaiting) await HideWaiting();
             }
         }
     }

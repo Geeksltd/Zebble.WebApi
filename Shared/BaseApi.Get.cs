@@ -93,7 +93,7 @@ namespace Zebble
             {
                 result = GetCachedResponse<TResponse>(relativeUrl);
                 if (cacheChoice == ApiResponseCache.AcceptButWarn)
-                    await Alert.Toast(StaleDataWarning);
+                    await Toast(StaleDataWarning);
             }
 
             return result;
