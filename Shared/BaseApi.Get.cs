@@ -7,6 +7,7 @@ namespace Zebble
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
+    using Olive;
 
     partial class BaseApi
     {
@@ -40,7 +41,7 @@ namespace Zebble
                 queryString = queryParams.GetType().GetPropertiesAndFields(BindingFlags.FlattenHierarchy | BindingFlags.Public | BindingFlags.Instance).Select(p => p.Name + "=" + p.GetValue(queryParams).ToStringOrEmpty().UrlEncode())
                      .Trim().ToString("&");
 
-            if (queryString.LacksValue()) return baseUrl;
+            if (queryString.IsEmpty()) return baseUrl;
 
             if (baseUrl.Contains("?")) return (baseUrl + "&" + queryString).KeepReplacing("&&", "&");
             return baseUrl + "?" + queryString;
@@ -107,7 +108,7 @@ namespace Zebble
             try
             {
                 localCachedVersion = (await GetCacheFile<TResponse>(url).ReadAllTextAsync()).CreateSHA1Hash();
-                if (localCachedVersion.LacksValue()) throw new Exception("Local cached file's hash is empty!");
+                if (localCachedVersion.IsEmpty()) throw new Exception("Local cached file's hash is empty!");
             }
             catch (Exception ex)
             {
@@ -233,7 +234,11 @@ namespace Zebble
             lock (CacheSyncLock)
             {
                 var file = GetCacheFile<TResponse>(getApiUrl);
-                if (file.Exists()) file.SyncDelete();
+                if (file.Exists())
+                {
+                    lock (file.GetSyncLock())
+                        file.Delete();
+                }
             }
 
             return Task.CompletedTask;

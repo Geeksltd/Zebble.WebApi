@@ -3,6 +3,7 @@ namespace Zebble
     using System;
     using System.Linq;
     using System.Net.Http.Headers;
+    using Olive;
 
     public partial class BaseApi
     {
@@ -26,7 +27,7 @@ namespace Zebble
 
             if (result.StartsWithAny("http://", "https://")) return result;
 
-            if (BaseUrl.LacksValue()) throw new Exception("Could not find the config value for 'Api.Base.Url'.");
+            if (BaseUrl.IsEmpty()) throw new Exception("Could not find the config value for 'Api.Base.Url'.");
 
             return BaseUrl.EnsureEndsWith("/") + result;
         }

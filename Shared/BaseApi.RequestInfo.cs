@@ -7,6 +7,7 @@ namespace Zebble
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
+    using Olive;
 
     partial class BaseApi
     {
@@ -113,7 +114,7 @@ namespace Zebble
             public async Task<TResponse> ExtractResponse<TResponse>()
             {
                 // Handle void calls
-                if (ResponseText.LacksValue() && typeof(TResponse) == typeof(bool))
+                if (ResponseText.IsEmpty() && typeof(TResponse) == typeof(bool))
                     return default(TResponse);
 
                 try
@@ -200,7 +201,7 @@ namespace Zebble
                             throw new NoNetWorkException(errorMessage, ex);
                         }
 
-                        responseBody = (ex as WebException)?.GetResponseBody() ?? responseBody;
+                        responseBody = (await ((ex as WebException)?.GetResponseBody() ?? Task.FromResult<string>(null))) ?? responseBody;
                         if (responseBody.OrEmpty().StartsWith("{\"Message\""))
                         {
                             try
