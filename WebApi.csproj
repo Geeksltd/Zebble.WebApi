@@ -1,13 +1,13 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.22">
   <PropertyGroup>
     <TargetFrameworks></TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">Xamarin.iOS10;MonoAndroid90;uap10.0.18362</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">Xamarin.iOS10;MonoAndroid90</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">netcoreapp3.1;Xamarin.iOS10;MonoAndroid90;uap10.0.18362</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp3.1;Xamarin.iOS10;MonoAndroid90</TargetFrameworks>
     <AssemblyName>Zebble.WebApi</AssemblyName>
     <RootNamespace>Zebble</RootNamespace>
     <PackageId>Zebble.WebApi</PackageId>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <Version>4.5.386.0</Version>
+    <Version>4.5.387.0</Version>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <LangVersion>default</LangVersion>
@@ -45,6 +45,9 @@
   </PropertyGroup>
   <PropertyGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
     <DefineConstants>IOS</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
+    <DefineConstants>MVVM</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Shared\**\*.cs" />
