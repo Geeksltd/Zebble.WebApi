@@ -115,7 +115,7 @@ namespace Zebble
             {
                 // Handle void calls
                 if (ResponseText.IsEmpty() && typeof(TResponse) == typeof(bool))
-                    return default(TResponse);
+                    return default;
 
                 try
                 {
@@ -126,7 +126,8 @@ namespace Zebble
                             result = ResponseText.EnsureStartsWith("\"").EnsureEndsWith("\"");
                         return JsonConvert.DeserializeObject<TResponse>(result);
                     }
-                    else return default(TResponse);
+                    
+                    return default;
                 }
                 catch (Exception ex)
                 {
@@ -134,7 +135,7 @@ namespace Zebble
                     LogTheError(ex);
 
                     await ErrorAction.Apply("The server's response was unexpected");
-                    return default(TResponse);
+                    return default;
                 }
             }
 
@@ -184,10 +185,11 @@ namespace Zebble
 
                         if (failed)
                         {
-                            Device.Log.Warning("Server Response: " + responseBody);
+                            Log.For(this).Warning("Server Response: " + responseBody);
                             throw new Exception(errorMessage);
                         }
-                        else return responseBody;
+                        
+                        return responseBody;
                     }
                     catch (Exception ex)
                     {
@@ -228,8 +230,7 @@ namespace Zebble
             void LogTheError(Exception ex)
             {
                 Error = ex;
-                Device.Log.Error($"Http{HttpMethod} failed -> {RelativeUrl}");
-                Device.Log.Warning(ex);
+                Log.For(this).Error(ex, $"Http{HttpMethod} failed -> {RelativeUrl}");
             }
         }
     }

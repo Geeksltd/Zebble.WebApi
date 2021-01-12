@@ -112,8 +112,7 @@ namespace Zebble
             }
             catch (Exception ex)
             {
-                Device.Log.Error("Strangely, there is no cache any more when running RefreshUponUpdatedResponse(...).");
-                Device.Log.Error(ex);
+                Log.For<BaseApi>().Error(ex, "Strangely, there is no cache any more when running RefreshUponUpdatedResponse(...).");
                 return; // High concurrency perhaps.
             }
 
@@ -144,7 +143,7 @@ namespace Zebble
                     await refresher(result);
                 }
             }
-            catch (Exception ex) { Device.Log.Error(ex); }
+            catch (Exception ex) { Log.For<BaseApi>().Error(ex); }
         }
 
         static async Task UpdateCacheUponOfflineModification<TResponse, TIdentifier>(TResponse modified, string httpMethod) where TResponse : IQueueable<TIdentifier>
@@ -208,7 +207,7 @@ namespace Zebble
                     }
                 );
             }
-            catch { return default(TResponse); }
+            catch { return default; }
         }
 
         /// <summary>
@@ -222,7 +221,7 @@ namespace Zebble
                     Device.IO.Directory(CACHE_FOLDER).Delete(recursive: true);
             }
 
-            // Desined as a task in case in the future we need it.
+            // Designed as a task in case in the future we need it.
             return Task.CompletedTask;
         }
 
