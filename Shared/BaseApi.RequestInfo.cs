@@ -126,7 +126,7 @@ namespace Zebble
                             result = ResponseText.EnsureStartsWith("\"").EnsureEndsWith("\"");
                         return JsonConvert.DeserializeObject<TResponse>(result);
                     }
-                    
+
                     return default;
                 }
                 catch (Exception ex)
@@ -188,7 +188,7 @@ namespace Zebble
                             Log.For(this).Warning("Server Response: " + responseBody);
                             throw new Exception(errorMessage);
                         }
-                        
+
                         return responseBody;
                     }
                     catch (Exception ex)
@@ -217,10 +217,10 @@ namespace Zebble
                         // We are doing this in cases that error is not serialized in the SeverError format
                         else errorMessage = responseBody.Or(errorMessage);
 
-                        if (errorMessage.StartsWith("<!DOCTYPE") && errorMessage.Contains("<title>"))
+                        if (errorMessage.Trim().StartsWith("<!DOCTYPE") && errorMessage.Contains("<title>"))
                             errorMessage = errorMessage.Substring("<title>", "</title>", inclusive: false);
 
-                        //await ErrorAction.Apply(errorMessage);
+                        if (errorMessage == "Error") errorMessage = "There was a problem on the server.";
 
                         throw new Exception(errorMessage, ex);
                     }
