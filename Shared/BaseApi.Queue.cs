@@ -7,6 +7,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Olive;
+    using System.Net.Http;
 
     partial class BaseApi
     {
@@ -77,7 +78,10 @@
             return UpdateQueueFile<TEntitiy, TIdentifier>(queueItems);
         }
 
-        public static async Task<bool> ApplyQueueItems<TEntitiy, TIdentifier>(bool applyRejectedItems = false) where TEntitiy : IQueueable<TIdentifier>
+        public static async Task<bool> ApplyQueueItems<TEntitiy, TIdentifier>(
+            bool applyRejectedItems = false,
+            Func<string> sessionTokenProvider = null,
+            Action<HttpClient> onConfigureClient = null) where TEntitiy : IQueueable<TIdentifier>
         {
             var queueItems = await GetQueueItems<TEntitiy>();
 
@@ -88,7 +92,7 @@
                 if (queueItem.Status == QueueStatus.Added
                 || (queueItem.Status == QueueStatus.Rejected && applyRejectedItems))
                 {
-                    if (await queueItem.RequestInfo.Send()) queueItem.Status = QueueStatus.Applied;
+                    if (await queueItem.RequestInfo.Send(sessionTokenProvider, onConfigureClient)) queueItem.Status = QueueStatus.Applied;
                     else queueItem.Status = QueueStatus.Rejected;
 
                     queueItem.TimeUpdated = DateTime.Now;

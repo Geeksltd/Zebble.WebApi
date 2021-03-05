@@ -8,12 +8,13 @@ namespace Zebble
     using System.Reflection;
     using System.Threading.Tasks;
     using Olive;
+    using System.Net.Http;
 
     partial class BaseApi
     {
         public static string StaleDataWarning = "The latest data cannot be received from the server right now.";
         const string CACHE_FOLDER = "-ApiCache";
-        static object CacheSyncLock = new object();
+        static object CacheSyncLock = new();
 
         static FileInfo GetCacheFile<TResponse>(string url)
         {
@@ -54,7 +55,14 @@ namespace Zebble
             return true;
         }
 
-        public static async Task<TResponse> Get<TResponse>(string relativeUrl, object queryParams = null, OnError errorAction = OnError.Toast, ApiResponseCache cacheChoice = ApiResponseCache.Accept, Func<TResponse, Task> refresher = null)
+        public static async Task<TResponse> Get<TResponse>(
+            string relativeUrl,
+            object queryParams = null,
+            OnError errorAction = OnError.Toast,
+            ApiResponseCache cacheChoice = ApiResponseCache.Accept,
+            Func<TResponse, Task> refresher = null,
+            Func<string> sessionTokenProvider = null,
+            Action<HttpClient> onConfigureClient = null)
         {
             if (refresher != null && cacheChoice != ApiResponseCache.PreferThenUpdate)
                 throw new ArgumentException("refresher can only be provided when using ApiResponseCache.PreferThenUpdate.");
@@ -71,7 +79,7 @@ namespace Zebble
                 if (HasValue(result))
                 {
                     if (cacheChoice == ApiResponseCache.PreferThenUpdate)
-                        Thread.Pool.RunOnNewThread(() => RefreshUponUpdatedResponse(relativeUrl, refresher));
+                        Thread.Pool.RunOnNewThread(() => RefreshUponUpdatedResponse(relativeUrl, refresher, sessionTokenProvider, onConfigureClient));
 
                     return result;
                 }
@@ -82,7 +90,7 @@ namespace Zebble
 
             var request = new RequestInfo(relativeUrl) { ErrorAction = errorAction, HttpMethod = "GET" };
 
-            if (await request.Send())
+            if (await request.Send(sessionTokenProvider, onConfigureClient))
             {
                 result = await request.ExtractResponse<TResponse>();
 
@@ -100,7 +108,11 @@ namespace Zebble
             return result;
         }
 
-        static async Task RefreshUponUpdatedResponse<TResponse>(string url, Func<TResponse, Task> refresher)
+        static async Task RefreshUponUpdatedResponse<TResponse>(
+            string url,
+            Func<TResponse, Task> refresher,
+            Func<string> sessionTokenProvider,
+            Action<HttpClient> onConfigureClient)
         {
             await Task.Delay(50);
 
@@ -125,7 +137,7 @@ namespace Zebble
 
             try
             {
-                if (!await request.Send()) return;
+                if (!await request.Send(sessionTokenProvider, onConfigureClient)) return;
 
                 if (localCachedVersion.HasValue() && request.ResponseCode == System.Net.HttpStatusCode.NotModified) return;
 

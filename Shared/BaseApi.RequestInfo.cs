@@ -60,11 +60,11 @@ namespace Zebble
             /// The error action will also apply.
             /// It will return whether the response was successfully received.
             /// </summary>
-            public async Task<bool> Send()
+            public async Task<bool> Send(Func<string> sessionTokenProvider, Action<HttpClient> onConfigureClient)
             {
                 try
                 {
-                    ResponseText = (await Thread.Pool.Run(DoSend)).OrEmpty();
+                    ResponseText = (await Thread.Pool.Run(() => DoSend(sessionTokenProvider, onConfigureClient))).OrEmpty();
                     return true;
                 }
                 catch (Exception ex)
@@ -81,11 +81,11 @@ namespace Zebble
             /// The error action will also apply.
             /// It will return whether the response was successfully received.
             /// </summary>
-            public async Task<bool> Send<TEntity, TIdentifier>(TEntity entity) where TEntity : IQueueable<TIdentifier>
+            public async Task<bool> Send<TEntity, TIdentifier>(TEntity entity, Func<string> sessionTokenProvider, Action<HttpClient> onConfigureClient) where TEntity : IQueueable<TIdentifier>
             {
                 try
                 {
-                    ResponseText = (await Thread.Pool.Run(DoSend)).OrEmpty();
+                    ResponseText = (await Thread.Pool.Run(() => DoSend(sessionTokenProvider, onConfigureClient))).OrEmpty();
                     return true;
                 }
                 catch (Exception ex)
@@ -139,7 +139,7 @@ namespace Zebble
                 }
             }
 
-            async Task<string> DoSend()
+            async Task<string> DoSend(Func<string> sessionTokenProvider, Action<HttpClient> onConfigureClient)
             {
                 var url = Url(RelativeUrl);
                 if (EnsureTrailingSlash && url.Lacks("?")) url = url.EnsureEndsWith("/");
@@ -148,7 +148,7 @@ namespace Zebble
                 {
                     var req = new HttpRequestMessage(new HttpMethod(HttpMethod), url);
 
-                    var sessionToken = GetSessionToken();
+                    var sessionToken = sessionTokenProvider?.Invoke() ?? GetSessionToken();
                     if (sessionToken.HasValue())
                         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", sessionToken);
 
@@ -161,6 +161,8 @@ namespace Zebble
                                   System.Text.Encoding.UTF8,
                                     GetContentType());
                     }
+
+                    onConfigureClient?.Invoke(client);
 
                     var errorMessage = "Connection to the server failed.";
                     string responseBody = null;
