@@ -144,7 +144,7 @@ namespace Zebble
                 var url = Url(RelativeUrl);
                 if (EnsureTrailingSlash && url.Lacks("?")) url = url.EnsureEndsWith("/");
 
-                using (var client = Device.Network.HttpClient())
+                using (var client = new HttpClient())
                 {
                     var req = new HttpRequestMessage(new HttpMethod(HttpMethod), url);
 
