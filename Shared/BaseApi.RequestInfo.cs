@@ -144,88 +144,86 @@ namespace Zebble
                 var url = Url(RelativeUrl);
                 if (EnsureTrailingSlash && url.Lacks("?")) url = url.EnsureEndsWith("/");
 
-                using (var client = new HttpClient())
+                using var client = Context.Current.GetService<IHttpClientFactory>().CreateClient();
+                var req = new HttpRequestMessage(new HttpMethod(HttpMethod), url);
+
+                var sessionToken = sessionTokenProvider?.Invoke() ?? GetSessionToken();
+                if (sessionToken.HasValue())
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", sessionToken);
+
+                if (LocalCachedVersion.HasValue())
+                    client.DefaultRequestHeaders.IfNoneMatch.Add(new EntityTagHeaderValue($"\"{LocalCachedVersion}\""));
+
+                if (req.Method != System.Net.Http.HttpMethod.Get)
                 {
-                    var req = new HttpRequestMessage(new HttpMethod(HttpMethod), url);
+                    req.Content = new StringContent(RequestData.OrEmpty(),
+                              System.Text.Encoding.UTF8,
+                                GetContentType());
+                }
 
-                    var sessionToken = sessionTokenProvider?.Invoke() ?? GetSessionToken();
-                    if (sessionToken.HasValue())
-                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", sessionToken);
+                onConfigureClient?.Invoke(client);
 
-                    if (LocalCachedVersion.HasValue())
-                        client.DefaultRequestHeaders.IfNoneMatch.Add(new EntityTagHeaderValue($"\"{LocalCachedVersion}\""));
+                var errorMessage = "Connection to the server failed.";
+                string responseBody = null;
+                try
+                {
+                    var response = await client.SendAsync(req);
+                    var failed = false;
 
-                    if (req.Method != System.Net.Http.HttpMethod.Get)
+                    ResponseCode = response.StatusCode;
+                    ResponseHeaders = response.Headers;
+
+                    if (LocalCachedVersion.HasValue() && ResponseCode == HttpStatusCode.NotModified)
+                        return null;
+
+                    if (((int)ResponseCode) >= HTTP_ERROR_STARTING_CODE)
                     {
-                        req.Content = new StringContent(RequestData.OrEmpty(),
-                                  System.Text.Encoding.UTF8,
-                                    GetContentType());
+                        errorMessage = "Connection to the server failed: " + ResponseCode;
+                        failed = true;
                     }
 
-                    onConfigureClient?.Invoke(client);
+                    responseBody = await response.Content.ReadAsStringAsync();
 
-                    var errorMessage = "Connection to the server failed.";
-                    string responseBody = null;
-                    try
+                    if (failed)
                     {
-                        var response = await client.SendAsync(req);
-                        var failed = false;
-
-                        ResponseCode = response.StatusCode;
-                        ResponseHeaders = response.Headers;
-
-                        if (LocalCachedVersion.HasValue() && ResponseCode == HttpStatusCode.NotModified)
-                            return null;
-
-                        if (((int)ResponseCode) >= HTTP_ERROR_STARTING_CODE)
-                        {
-                            errorMessage = "Connection to the server failed: " + ResponseCode;
-                            failed = true;
-                        }
-
-                        responseBody = await response.Content.ReadAsStringAsync();
-
-                        if (failed)
-                        {
-                            Log.For(this).Warning("Server Response: " + responseBody);
-                            throw new Exception(errorMessage);
-                        }
-
-                        return responseBody;
+                        Log.For(this).Warning("Server Response: " + responseBody);
+                        throw new Exception(errorMessage);
                     }
-                    catch (Exception ex)
+
+                    return responseBody;
+                }
+                catch (Exception ex)
+                {
+                    LogTheError(ex);
+
+                    if (System.Diagnostics.Debugger.IsAttached) errorMessage = $"Api call failed: {url}";
+
+                    if (!await Device.Network.IsAvailable())
                     {
-                        LogTheError(ex);
-
-                        if (System.Diagnostics.Debugger.IsAttached) errorMessage = $"Api call failed: {url}";
-
-                        if (!await Device.Network.IsAvailable())
-                        {
-                            errorMessage = "Internet connection is unavailable.";
-                            throw new NoNetWorkException(errorMessage, ex);
-                        }
-
-                        responseBody = (await ((ex as WebException)?.GetResponseBody() ?? Task.FromResult<string>(null))) ?? responseBody;
-                        if (responseBody.OrEmpty().StartsWith("{\"Message\""))
-                        {
-                            try
-                            {
-                                var explicitMessage = JsonConvert.DeserializeObject<ServerError>(responseBody).Get(x => x.Message.Or(x.ExceptionMessage));
-
-                                errorMessage = explicitMessage.Or(errorMessage);
-                            }
-                            catch { /* No logging is needed */; }
-                        }
-                        // We are doing this in cases that error is not serialized in the SeverError format
-                        else errorMessage = responseBody.Or(errorMessage);
-
-                        if (errorMessage.Trim().StartsWith("<!DOCTYPE") && errorMessage.Contains("<title>"))
-                            errorMessage = errorMessage.Substring("<title>", "</title>", inclusive: false);
-
-                        if (errorMessage == "Error") errorMessage = "There was a problem on the server.";
-
-                        throw new Exception(errorMessage, ex);
+                        errorMessage = "Internet connection is unavailable.";
+                        throw new NoNetWorkException(errorMessage, ex);
                     }
+
+                    responseBody = (await ((ex as WebException)?.GetResponseBody() ?? Task.FromResult<string>(null))) ?? responseBody;
+                    if (responseBody.OrEmpty().StartsWith("{\"Message\""))
+                    {
+                        try
+                        {
+                            var explicitMessage = JsonConvert.DeserializeObject<ServerError>(responseBody).Get(x => x.Message.Or(x.ExceptionMessage));
+
+                            errorMessage = explicitMessage.Or(errorMessage);
+                        }
+                        catch { /* No logging is needed */; }
+                    }
+                    // We are doing this in cases that error is not serialized in the SeverError format
+                    else errorMessage = responseBody.Or(errorMessage);
+
+                    if (errorMessage.Trim().StartsWith("<!DOCTYPE") && errorMessage.Contains("<title>"))
+                        errorMessage = errorMessage.Substring("<title>", "</title>", inclusive: false);
+
+                    if (errorMessage == "Error") errorMessage = "There was a problem on the server.";
+
+                    throw new Exception(errorMessage, ex);
                 }
             }
 
