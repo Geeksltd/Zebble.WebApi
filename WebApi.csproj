@@ -1,12 +1,12 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.23">
+﻿<Project Sdk="MSBuild.Sdk.Extras/3.0.44">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;Xamarin.iOS10;MonoAndroid90</TargetFrameworks>
+    <TargetFrameworks>net6.0;Xamarin.iOS10;MonoAndroid13.0</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' == 'Windows_NT' ">$(TargetFrameworks);uap10.0.18362</TargetFrameworks>
     <AssemblyName>Zebble.WebApi</AssemblyName>
     <RootNamespace>Zebble</RootNamespace>
     <PackageId>Zebble.WebApi</PackageId>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
-    <Version>4.5.399.0</Version>
+    <Version>4.5.400.0</Version>
     <PackOnBuild>true</PackOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <DefineConstants>$(DefineConstants)</DefineConstants>
@@ -24,7 +24,7 @@
     <PackageReleaseNotes>Minor fixes</PackageReleaseNotes>
     <Owners>Geeks Ltd</Owners>
     <Authors>Geeks Ltd</Authors>
-    <Copyright>Geeks Ltd 2021, All rights reserved.</Copyright>
+    <Copyright>Geeks Ltd 2023, All rights reserved.</Copyright>
     <DisableExtraReferences>true</DisableExtraReferences>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
@@ -45,7 +45,7 @@
   <PropertyGroup Condition=" $(TargetFramework.StartsWith('Xamarin.iOS')) ">
     <DefineConstants>$(DefineConstants);IOS</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
+  <PropertyGroup Condition=" $(TargetFramework.StartsWith('net6.0')) ">
     <DefineConstants>MVVM</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
@@ -67,7 +67,7 @@
     <None Remove="Zebble-LicenseAgreement.txt" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Zebble" Version="4.5.605" />
+    <PackageReference Include="Zebble" Version="4.5.673" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Android\" />
