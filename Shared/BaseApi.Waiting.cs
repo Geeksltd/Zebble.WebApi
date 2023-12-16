@@ -1,13 +1,14 @@
 ﻿namespace Zebble
 {
+    using System;
     using System.Threading.Tasks;
 
     partial class BaseApi
     {
 #if MVVM
-        static Task HideWaiting()
+        static Task HideWaiting(Guid? version = null)
         {
-            Zebble.Mvvm.DialogsViewModel.Current.HideWaiting();
+            Zebble.Mvvm.DialogsViewModel.Current.HideWaiting(version);
             return Task.CompletedTask;
         }
 
@@ -23,7 +24,7 @@
             return Task.CompletedTask;
         }
 #else
-        static Task HideWaiting() => Dialogs.Current.HideWaiting();
+        static Task HideWaiting(Guid? version = null) => Dialogs.Current.HideWaiting(version);
 
         static Task ShowWaiting() => Dialogs.Current.ShowWaiting();
 
